@@ -22,8 +22,40 @@ from app.keyboards.main_menu import (
 router = Router()
 
 
+ADMIN_CONTACT = "@FrenDoLot"
+
+
 def build_owner_link(bot_username: str, owner_id: int) -> str:
     return f"https://t.me/{bot_username}?start=owner_{owner_id}"
+
+
+def get_status_text(status: str) -> str:
+    if status == "trial":
+        return "пробный период"
+
+    if status == "active":
+        return "активная подписка"
+
+    if status == "expired":
+        return "доступ закончился"
+
+    return status
+
+
+def get_plan_text(plan: str) -> str:
+    if plan == "trial":
+        return "3 дня бесплатно"
+
+    if plan == "month":
+        return "399 ₽ / месяц"
+
+    if plan == "year":
+        return "2999 ₽ / год"
+
+    if plan == "manual":
+        return "активировано вручную"
+
+    return plan
 
 
 async def get_current_owner(message: Message):
@@ -42,7 +74,8 @@ async def get_current_owner(message: Message):
 async def access_expired_message(message: Message):
     await message.answer(
         "⛔ Пробный период закончился, вы можете приобрести подписку "
-        "в разделе «Приобрести подписку!».",
+        "в разделе «Приобрести подписку!».\n\n"
+        f"Для подключения подписки напишите администратору: {ADMIN_CONTACT}",
         reply_markup=expired_owner_menu(),
     )
 
@@ -190,12 +223,19 @@ async def show_subscription(message: Message):
             "💳 Подписка\n\n"
             "У вас пока нет активного пробного периода или подписки.\n\n"
             "Вы можете активировать пробный период на 3 дня "
-            "или приобрести подписку.",
+            "или приобрести подписку.\n\n"
+            "Тарифы:\n"
+            "💳 399 ₽ / месяц\n"
+            "🔥 2999 ₽ / год\n\n"
+            f"Для подключения подписки напишите администратору: {ADMIN_CONTACT}",
             reply_markup=tariffs_menu(),
         )
         return
 
     status, plan, started_at, paid_until = subscription
+
+    status_text = get_status_text(status)
+    plan_text = get_plan_text(plan)
 
     try:
         paid_until_dt = datetime.fromisoformat(paid_until)
@@ -218,7 +258,8 @@ async def show_subscription(message: Message):
             "«Приобрести подписку!».\n\n"
             "Тарифы:\n"
             "💳 399 ₽ / месяц\n"
-            "🔥 2999 ₽ / год",
+            "🔥 2999 ₽ / год\n\n"
+            f"Для подключения подписки напишите администратору: {ADMIN_CONTACT}",
             reply_markup=expired_owner_menu(),
         )
         return
@@ -226,12 +267,13 @@ async def show_subscription(message: Message):
     await message.answer(
         "💳 Подписка\n\n"
         "✅ Доступ активен\n"
-        f"📌 Статус: {status}\n"
-        f"📦 Тариф: {plan}\n"
+        f"📌 Статус: {status_text}\n"
+        f"📦 Тариф: {plan_text}\n"
         f"⏳ Осталось дней: {days_left}\n"
         f"📅 Доступ до: {paid_until_text}\n\n"
-        "Тарифы после окончания доступа:\n"
+        "Тарифы:\n"
         "💳 399 ₽ / месяц\n"
-        "🔥 2999 ₽ / год",
+        "🔥 2999 ₽ / год\n\n"
+        f"Если хотите приобрести полноценную подписку — обращайтесь к {ADMIN_CONTACT}",
         reply_markup=active_owner_menu(),
     )

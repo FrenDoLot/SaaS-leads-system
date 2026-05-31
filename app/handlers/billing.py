@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.types import Message
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
 from app.config import load_config
 from app.database import (
@@ -24,9 +24,24 @@ router = Router()
 MONTH_PRICE = 399
 YEAR_PRICE = 2999
 
+ADMIN_USERNAME = "FrenDoLot"
+
 
 def build_owner_link(bot_username: str, owner_id: int) -> str:
     return f"https://t.me/{bot_username}?start=owner_{owner_id}"
+
+
+def contact_admin_keyboard():
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="📩 Написать администратору",
+                    url=f"https://t.me/{ADMIN_USERNAME}",
+                )
+            ]
+        ]
+    )
 
 
 async def get_current_owner_id(message: Message) -> int:
@@ -37,6 +52,38 @@ async def get_current_owner_id(message: Message) -> int:
     )
 
     return owner_id
+
+
+async def notify_admins_about_payment_request(
+    message: Message,
+    plan_text: str,
+    days: int,
+):
+    config = load_config()
+
+    username = message.from_user.username
+
+    if username:
+        username_text = f"@{username}"
+    else:
+        username_text = "не указан"
+
+    text = (
+        "💳 Новая заявка на подключение подписки!\n\n"
+        f"📦 Тариф: {plan_text}\n"
+        f"⏳ Дней доступа после оплаты: {days}\n\n"
+        f"👤 Имя: {message.from_user.full_name}\n"
+        f"🆔 Telegram ID: {message.from_user.id}\n"
+        f"📨 Username: {username_text}\n\n"
+        "После оплаты продлите доступ командой:\n"
+        f"/extend {message.from_user.id} {days}"
+    )
+
+    for admin_id in config.admin_ids:
+        try:
+            await message.bot.send_message(admin_id, text)
+        except Exception:
+            pass
 
 
 @router.message(F.text == "🎁 Пробный период 3 дня")
@@ -96,18 +143,25 @@ async def buy_subscription_handler(message: Message):
 async def month_tariff_handler(message: Message):
     owner_id = await get_current_owner_id(message)
 
-    payment_id = await create_payment(
+    await create_payment(
         owner_id=owner_id,
         amount=MONTH_PRICE,
         plan="month",
     )
 
+    await notify_admins_about_payment_request(
+        message=message,
+        plan_text="399 ₽ / месяц",
+        days=30,
+    )
+
     await message.answer(
         "💳 Тариф: 399 ₽ / месяц\n\n"
-        "Оплата будет подключена следующим шагом.\n\n"
-        f"ID платежа: {payment_id}\n\n"
-        "Пока для теста админ может продлить доступ командой:\n"
-        f"/extend {message.from_user.id} 30"
+        "Для подключения подписки напишите администратору.\n"
+        "Он подскажет способ оплаты и активирует доступ после подтверждения.\n\n"
+        "После оплаты сразу отправьте чек администратору — так доступ будет активирован быстрее.\n\n"
+        "После активации вы снова сможете получить свою ссылку и принимать заявки.",
+        reply_markup=contact_admin_keyboard(),
     )
 
 
@@ -115,18 +169,25 @@ async def month_tariff_handler(message: Message):
 async def year_tariff_handler(message: Message):
     owner_id = await get_current_owner_id(message)
 
-    payment_id = await create_payment(
+    await create_payment(
         owner_id=owner_id,
         amount=YEAR_PRICE,
         plan="year",
     )
 
+    await notify_admins_about_payment_request(
+        message=message,
+        plan_text="2999 ₽ / год",
+        days=365,
+    )
+
     await message.answer(
         "🔥 Тариф: 2999 ₽ / год\n\n"
-        "Оплата будет подключена следующим шагом.\n\n"
-        f"ID платежа: {payment_id}\n\n"
-        "Пока для теста админ может продлить доступ командой:\n"
-        f"/extend {message.from_user.id} 365"
+        "Для подключения подписки напишите администратору.\n"
+        "Он подскажет способ оплаты и активирует доступ после подтверждения.\n\n"
+        "После оплаты сразу отправьте чек администратору — так доступ будет активирован быстрее.\n\n"
+        "После активации вы снова сможете получить свою ссылку и принимать заявки.",
+        reply_markup=contact_admin_keyboard(),
     )
 
 
