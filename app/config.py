@@ -29,6 +29,9 @@ def load_config() -> Config:
         if admin_id.strip()
     ]
 
+    if not admin_ids:
+        raise ValueError("ADMIN_IDS не найден в .env или пустой")
+
     return Config(
         bot_token=bot_token,
         admin_ids=admin_ids,

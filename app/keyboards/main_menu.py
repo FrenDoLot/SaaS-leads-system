@@ -1,26 +1,85 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 
-def client_menu():
+def start_owner_menu():
     return ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text="📝 Оставить заявку")],
-            [KeyboardButton(text="ℹ️ О сервисе")],
+            [
+                KeyboardButton(text="🎁 Пробный период 3 дня"),
+            ],
+            [
+                KeyboardButton(text="💳 Приобрести подписку"),
+            ],
+            [
+                KeyboardButton(text="ℹ️ О сервисе"),
+            ],
         ],
         resize_keyboard=True,
     )
 
 
-def owner_menu():
+def active_owner_menu():
     return ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text="📝 Оставить заявку")],
-            [KeyboardButton(text="📥 Мои заявки")],
-            [KeyboardButton(text="📊 Статистика")],
-            [KeyboardButton(text="👥 Клиенты")],
-            [KeyboardButton(text="💳 Подписка")],
-            [KeyboardButton(text="🔗 Моя ссылка")],
-            [KeyboardButton(text="ℹ️ О сервисе")],
+            [
+                KeyboardButton(text="🔗 Моя ссылка"),
+            ],
+            [
+                KeyboardButton(text="📥 Мои заявки"),
+                KeyboardButton(text="📊 Статистика"),
+            ],
+            [
+                KeyboardButton(text="👥 Клиенты"),
+                KeyboardButton(text="💳 Подписка"),
+            ],
+            [
+                KeyboardButton(text="ℹ️ О сервисе"),
+            ],
+        ],
+        resize_keyboard=True,
+    )
+
+
+def expired_owner_menu():
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text="💳 Приобрести подписку"),
+            ],
+            [
+                KeyboardButton(text="ℹ️ О сервисе"),
+            ],
+        ],
+        resize_keyboard=True,
+    )
+
+
+def client_menu():
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text="📝 Оставить заявку"),
+            ],
+            [
+                KeyboardButton(text="ℹ️ О сервисе"),
+            ],
+        ],
+        resize_keyboard=True,
+    )
+
+
+def tariffs_menu():
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text="💳 399 ₽ / месяц"),
+            ],
+            [
+                KeyboardButton(text="🔥 2999 ₽ / год"),
+            ],
+            [
+                KeyboardButton(text="⬅️ Назад"),
+            ],
         ],
         resize_keyboard=True,
     )
